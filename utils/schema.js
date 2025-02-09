@@ -30,6 +30,3 @@ export const loginUserSchema = object({
     "Password is required"
   ),
 });
-
-// export type CreateUserInput = TypeOf<typeof createUserSchema>;
-// export type LoginUserInput = TypeOf<typeof loginUserSchema>;

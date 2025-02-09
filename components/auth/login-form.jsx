@@ -3,21 +3,19 @@ import * as React from "react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInUser } from "@/app/actions/auth";
 import { loginUserSchema } from "@/utils/schema";
-import { createClient } from "@/utils/supabase/client";
-import { signInUser } from "@/app/actions";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
+import { loginWithGoogle, loginWithGitHub } from "@/utils/oauth";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export default function LoginForm() {
-  const router = useRouter();
-  const [error, setError] = React.useState("");
   const [isPending, startTransition] = React.useTransition();
-  const supabase = createClient();
+  const router = useRouter();
 
   const methods = useForm({
     resolver: zodResolver(loginUserSchema),
@@ -27,53 +25,36 @@ export default function LoginForm() {
     reset,
     handleSubmit,
     register,
+    setError,
     formState: { errors },
   } = methods;
 
   const onSubmitHandler = async (values) => {
     startTransition(async () => {
-      const result = await signInUser(values);
+      try {
+        await toast.promise(signInUser(values), {
+          loading: "Signing in...",
+          success: "Successfully logged in!",
+          error: (err) => err.message || "Login failed",
+        });
 
-      const { error } = JSON.parse(result);
-      if (error?.message) {
-        setError(error.message);
-        toast.error(error.message);
-        console.log("Error message", error.message);
+        router.push("/dashboard");
+      } catch (error) {
+        const errorMessage =
+          typeof error === "string"
+            ? error
+            : error?.message || "An unexpected error occurred";
+
+        console.error("Error message:", errorMessage);
+        setError("email", { type: "manual", message: errorMessage });
+        setError("password", { type: "manual", message: errorMessage });
         reset({ password: "" });
-        return;
       }
-
-      setError("");
-      toast.success("successfully logged in");
-      router.push("/dashboard");
-    });
-  };
-
-  const loginWithGitHub = () => {
-    supabase.auth.signInWithOAuth({
-      provider: "github",
-      options: {
-        redirectTo: `${location.origin}/auth/callback`,
-      },
-    });
-  };
-
-  const loginWithGoogle = () => {
-    supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${location.origin}/auth/callback`,
-      },
     });
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)} className="space-y-2">
-      {error && (
-        <p className="mb-6 rounded bg-destructive/80 py-4 text-center">
-          {error}
-        </p>
-      )}
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <Input
@@ -82,9 +63,9 @@ export default function LoginForm() {
           placeholder="your@email.com"
           className="w-full"
         />
-        {errors["email"] && (
+        {errors.email && (
           <span className="block pt-1 text-xs text-destructive">
-            {errors["email"]?.message}
+            {errors.email.message}
           </span>
         )}
       </div>
@@ -96,15 +77,15 @@ export default function LoginForm() {
           placeholder="************"
           className="w-full"
         />
-        {errors["password"] && (
+        {errors.password && (
           <span className="block pt-1 text-xs text-destructive">
-            {errors["password"]?.message}
+            {errors.password.message}
           </span>
         )}
       </div>
       <Button
         type="submit"
-        className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+        className="w-full bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 disabled:opacity-50"
         disabled={isPending}
       >
         {isPending ? "Signing in..." : "Sign in"}

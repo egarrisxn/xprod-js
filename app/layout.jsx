@@ -1,18 +1,19 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-// import DynamicNavbar from "@/components/dynamic-navbar";
-import TestNavbar from "@/components/test-navbar";
-import Footer from "@/components/footer";
+import Navbar from "@/components/shared/navbar";
+import Footer from "@/components/shared/footer";
 import "./globals.css";
 
 const geistSans = Geist({
-  variable: "--font-geist-sans",
   subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
 });
 
 export const metadata = {
@@ -24,7 +25,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased `}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"
@@ -32,9 +33,8 @@ export default function RootLayout({ children }) {
           enableSystem
           disableTransitionOnChange
         >
-          {/* <DynamicNavbar /> */}
-          <TestNavbar />
-          <main className="font-sans pt-8 grid min-h-[100dvh] w-full grid-rows-[1fr_auto]">
+          <Navbar />
+          <main className="pt-8 grid min-h-[100dvh] w-full grid-rows-[1fr_auto]">
             {children}
             <Footer />
           </main>

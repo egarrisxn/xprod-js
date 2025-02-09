@@ -1,8 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getUserData, signOutUser } from "@/app/actions";
-import { Button } from "./ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { getUserAndAvatar, signOutUser } from "@/app/actions/auth";
+import { Button } from "@/components/ui/button";
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -11,13 +10,13 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
-} from "./ui/navigation-menu";
+} from "@/components/ui/navigation-menu";
 
-export default async function DynamicNavbar() {
-  const user = await getUserData();
+export default async function Navbar() {
+  const user = await getUserAndAvatar();
 
   return (
-    <header className="w-full fixed border-b z-50  bg-background/80 backdrop-blur-lg">
+    <header className="w-full fixed border-b z-50 bg-background/80 backdrop-blur-lg">
       <nav className="mx-auto flex w-full max-w-screen-3xl justify-between 3xl:px-0 p-2 sm:p-3 3xl:py-4">
         {!user ? (
           <>
@@ -25,12 +24,13 @@ export default async function DynamicNavbar() {
               <NavigationMenu className="sm:hidden">
                 <NavigationMenuList>
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger>
+                    <NavigationMenuTrigger className="h-full mt-1">
                       <Image
                         src="/logos/xp.svg"
                         alt="Navbar Logo"
                         width={40}
                         height={40}
+                        className="aspect-square rounded-full"
                       />
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="w-full">
@@ -72,6 +72,7 @@ export default async function DynamicNavbar() {
                   alt="Navbar Logo"
                   width={40}
                   height={40}
+                  className="aspect-square rounded-full"
                 />
               </Link>
               <div className="hidden sm:flex">
@@ -100,9 +101,23 @@ export default async function DynamicNavbar() {
                 <NavigationMenuList>
                   <NavigationMenuItem>
                     <NavigationMenuTrigger className="h-full m-1">
-                      <Avatar>
-                        <AvatarImage src={user.avatarUrl} alt="User Avatar" />
-                      </Avatar>
+                      {user.avatarUrl ? (
+                        <Image
+                          src={user.avatarUrl}
+                          alt="User Avatar"
+                          width={40}
+                          height={40}
+                          className="rounded-full aspect-square"
+                        />
+                      ) : (
+                        <Image
+                          src="/avatars/user.png"
+                          alt="Fallback Avatar"
+                          width={40}
+                          height={40}
+                          className="rounded-full aspect-square"
+                        />
+                      )}
                     </NavigationMenuTrigger>
                     <NavigationMenuContent className="w-full">
                       <div className="inline-flex h-9 items-center w-max justify-center border-b px-4 py-2 text-xs sm:text-sm font-medium">
